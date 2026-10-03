@@ -1,0 +1,32 @@
+name: Docs
+
+on:
+  push:
+    paths:
+      - docs/**
+      - scripts/build-docs.sh
+      - .github/workflows/docs.yml
+  pull_request:
+    paths:
+      - docs/**
+      - scripts/build-docs.sh
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pandoc/actions/setup@v1
+        with:
+          version: 3.7.0.2
+      - uses: typst-community/setup-typst@v4
+        with:
+          typst-version: 0.14.2
+      - name: Build PDFs
+        run: scripts/build-docs.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: labs-pdf
+          path: build/docs/*.pdf

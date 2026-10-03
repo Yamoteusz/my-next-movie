@@ -28,6 +28,8 @@ Zadania na każde zajęcia są w folderze `docs/`:
 - [Lab 1: podstawy SwiftUI](docs/lab1.md)
 - [Lab 2: ekran wyszukiwania](docs/lab2.md)
 
+Wersję do druku (PDF) zbudujesz poleceniem `scripts/build-docs.sh` (wymaga [pandoc](https://pandoc.org) i [Typst](https://typst.app)). Gotowe PDF-y są też w GitHub Actions, workflow Docs, artefakt `labs-pdf`.
+
 Miejsca do uzupełnienia oznacza komentarz `// TODO: Lab N`. Listę wszystkich znajdziesz w Xcode: Find Navigator (⌘⇧F), szukaj `TODO: Lab`.
 
 Testy są dwojakie:
