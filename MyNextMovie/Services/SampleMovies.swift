@@ -10,7 +10,7 @@ let sampleMovies: [Movie] = [
         title: "The Matrix",
         overview: "A hacker named Neo learns that the world he lives in is a simulation.",
         releaseDate: "1999-03-31",
-        posterPath: nil,
+        posterPath: "/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
         voteAverage: 8.2,
         genreIds: [genreIdAction, genreIdScienceFiction]
     ),
@@ -19,7 +19,7 @@ let sampleMovies: [Movie] = [
         title: "Inception",
         overview: "A thief who steals secrets from dreams is asked to plant an idea instead.",
         releaseDate: "2010-07-15",
-        posterPath: nil,
+        posterPath: "/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
         voteAverage: 8.4,
         genreIds: [genreIdAction, genreIdScienceFiction, genreIdAdventure]
     ),
@@ -29,7 +29,7 @@ let sampleMovies: [Movie] = [
         overview:
             "A team of astronauts travels through a wormhole to find a new home for humanity.",
         releaseDate: "2014-11-05",
-        posterPath: nil,
+        posterPath: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg",
         voteAverage: 8.4,
         genreIds: [genreIdAdventure, genreIdDrama, genreIdScienceFiction]
     ),
@@ -38,7 +38,7 @@ let sampleMovies: [Movie] = [
         title: "Pulp Fiction",
         overview: "Several intertwined stories from the Los Angeles criminal underworld.",
         releaseDate: "1994-09-10",
-        posterPath: nil,
+        posterPath: "/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg",
         voteAverage: 8.5,
         genreIds: [genreIdThriller, genreIdCrime]
     ),
@@ -47,7 +47,7 @@ let sampleMovies: [Movie] = [
         title: "Spirited Away",
         overview: "Ten-year-old Chihiro wanders into a world of spirits and must save her parents.",
         releaseDate: "2001-07-20",
-        posterPath: nil,
+        posterPath: "/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg",
         voteAverage: 8.5,
         genreIds: [genreIdAnimation, genreIdFamily, genreIdFantasy]
     ),
