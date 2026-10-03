@@ -17,15 +17,26 @@ final class SearchViewModel {
     }
 
     func search() async {
-        // TODO: Lab 2, task 1. Like `MovieListViewModel.load`, with two differences:
-        // - trim the spaces around `query`. When the trimmed query is empty and no genre
-        //   is selected, set `state` to `.idle` and return without searching,
-        // - call `searchMovies(trimmedQuery, selectedGenreId)` instead of `loadMovies()`.
+        let trimmedQuery = query.trimmingCharacters(in: .whitespaces)
+        if trimmedQuery.isEmpty && selectedGenreId == noGenreId {
+            movies = []
+            errorMessage = ""
+            state = .idle
+            return
+        }
+        state = .loading
+        errorMessage = ""
+        do {
+            movies = try await searchMovies(trimmedQuery, selectedGenreId)
+            state = .loaded
+        } catch {
+            errorMessage = error.localizedDescription
+            state = .failed
+        }
     }
 
     /// Selects the genre, or clears the selection when the genre is already selected.
     func toggleGenre(_ genreId: Int) {
-        // TODO: Lab 2, task 1. When `selectedGenreId` already is `genreId`,
-        // set it to `noGenreId`. Otherwise set it to `genreId`.
+        selectedGenreId = selectedGenreId == genreId ? noGenreId : genreId
     }
 }
