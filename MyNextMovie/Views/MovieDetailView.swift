@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 private let backdropHeight: CGFloat = 440
@@ -9,17 +10,41 @@ private let posterShadowOffset: CGFloat = 10
 
 struct MovieDetailView: View {
     let movie: Movie
+    @State private var viewModel: MovieDetailViewModel
+
+    init(movie: Movie, loadDetails: @escaping MovieDetailsLoader) {
+        self.movie = movie
+        _viewModel = State(
+            initialValue: MovieDetailViewModel(movieId: movie.id, loadDetails: loadDetails))
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: spacingExtraLarge) {
                 MovieBackdrop(movie: movie)
-                MovieInfo(movie: movie).padding(.horizontal)
+                MovieInfo(movie: movie, details: viewModel.details).padding(.horizontal)
+                additionalContent.padding(.horizontal)
             }
             .padding(.bottom, spacingHuge)
         }
         .ignoresSafeArea(edges: .top)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar { SaveMovieButton(movie: movie) }
+        .task { await viewModel.loadIfNeeded() }
+    }
+
+    @ViewBuilder
+    private var additionalContent: some View {
+        switch viewModel.state {
+        case .idle, .loading:
+            ProgressView().frame(maxWidth: .infinity)
+        case .loaded:
+            MovieDetailSections(details: viewModel.details)
+        case .failed:
+            ErrorView(title: "Could not load details", message: viewModel.errorMessage) {
+                Task { await viewModel.load() }
+            }
+        }
     }
 }
 
@@ -68,12 +93,21 @@ private struct BlurredPoster: View {
 /// Title, year and rating, genres and overview under the backdrop.
 private struct MovieInfo: View {
     let movie: Movie
+    let details: MovieDetails
 
     var body: some View {
         VStack(alignment: .leading, spacing: spacingLarge) {
             heading
             GenreRow(genreIds: knownGenreIds(movie))
             overview
+            if !directorNames(details).isEmpty { directors }
+        }
+    }
+
+    private var directors: some View {
+        VStack(alignment: .leading, spacing: spacingSmall) {
+            Text("Directed by").font(.headline)
+            Text(directorNames(details)).foregroundStyle(.secondary)
         }
     }
 
@@ -81,7 +115,10 @@ private struct MovieInfo: View {
         VStack(alignment: .leading, spacing: spacingSmall) {
             Text(movie.title)
                 .font(.system(.largeTitle, design: .serif, weight: .bold))
-            Text(yearAndRating(movie))
+            if !details.tagline.isEmpty {
+                Text(details.tagline).italic().foregroundStyle(.secondary)
+            }
+            Text(movieFactsLine(movie, details, regionCode: watchRegionCode))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -116,7 +153,8 @@ private struct GenreRow: View {
 }
 
 #Preview {
-    NavigationStack {
-        MovieDetailView(movie: sampleMovies[0])
+    PopularMoviesPreview { movies in
+        NavigationStack { MovieDetailView(movie: movies[0], loadDetails: fetchMovieDetails) }
     }
+    .modelContainer(for: storedModelTypes, inMemory: true)
 }

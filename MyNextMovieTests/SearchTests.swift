@@ -5,16 +5,16 @@ import Testing
 @MainActor
 struct FilterMoviesTests {
     @Test func emptyQueryAndNoGenreReturnsEveryMovie() {
-        #expect(filterMovies(sampleMovies, query: "", genreId: noGenreId) == sampleMovies)
+        #expect(filterMovies(testMovies, query: "", genreId: noGenreId) == testMovies)
     }
 
     @Test func matchesTitleIgnoringCase() {
-        let foundMovies = filterMovies(sampleMovies, query: "matrix", genreId: noGenreId)
+        let foundMovies = filterMovies(testMovies, query: "matrix", genreId: noGenreId)
         #expect(titlesOf(foundMovies) == ["The Matrix"])
     }
 
     @Test func matchesKeywordInOverview() {
-        let foundMovies = filterMovies(sampleMovies, query: "wormhole", genreId: noGenreId)
+        let foundMovies = filterMovies(testMovies, query: "wormhole", genreId: noGenreId)
         #expect(titlesOf(foundMovies) == ["Interstellar"])
     }
 
@@ -28,21 +28,21 @@ struct FilterMoviesTests {
     }
 
     @Test func filtersByGenre() {
-        let foundMovies = filterMovies(sampleMovies, query: "", genreId: genreIdAnimation)
+        let foundMovies = filterMovies(testMovies, query: "", genreId: genreIdAnimation)
         #expect(titlesOf(foundMovies) == ["Spirited Away"])
     }
 
     @Test
     func combinesQueryAndGenre() {
-        #expect(filterMovies(sampleMovies, query: "matrix", genreId: genreIdAnimation).isEmpty)
+        #expect(filterMovies(testMovies, query: "matrix", genreId: genreIdAnimation).isEmpty)
         #expect(
-            titlesOf(filterMovies(sampleMovies, query: "matrix", genreId: genreIdAction)) == [
+            titlesOf(filterMovies(testMovies, query: "matrix", genreId: genreIdAction)) == [
                 "The Matrix"
             ])
     }
 
     @Test func trimsSpacesAroundQuery() {
-        let foundMovies = filterMovies(sampleMovies, query: "  inception ", genreId: noGenreId)
+        let foundMovies = filterMovies(testMovies, query: "  inception ", genreId: noGenreId)
         #expect(titlesOf(foundMovies) == ["Inception"])
     }
 }
@@ -53,7 +53,7 @@ struct SearchViewModelTests {
         var searchCount = 0
         let viewModel = SearchViewModel(searchMovies: { _, _ in
             searchCount += 1
-            return sampleMovies
+            return testMovies
         })
         viewModel.query = "   "
 
@@ -64,7 +64,7 @@ struct SearchViewModelTests {
     }
 
     @Test func searchesByGenreWithoutQuery() async {
-        let viewModel = SearchViewModel(searchMovies: searchSampleMovies)
+        let viewModel = SearchViewModel(searchMovies: filterTestMovies)
         viewModel.selectedGenreId = genreIdAnimation
 
         await viewModel.search()
@@ -74,7 +74,7 @@ struct SearchViewModelTests {
     }
 
     @Test func clearingSearchReturnsToIdle() async {
-        let viewModel = SearchViewModel(searchMovies: searchSampleMovies)
+        let viewModel = SearchViewModel(searchMovies: filterTestMovies)
         viewModel.query = "matrix"
         await viewModel.search()
         #expect(titlesOf(viewModel.movies) == ["The Matrix"])
@@ -114,6 +114,25 @@ struct SearchViewModelTests {
 
         #expect(viewModel.state == .failed)
         #expect(viewModel.errorMessage == "No connection")
+    }
+
+    @Test func olderSearchDoesNotReplaceNewerResults() async throws {
+        var finishFirst: CheckedContinuation<[Movie], Never>?
+        let viewModel = SearchViewModel(searchMovies: { query, _ in
+            if query == "matrix" {
+                return await withCheckedContinuation { finishFirst = $0 }
+            }
+            return [testMovies[1]]
+        })
+        viewModel.query = "matrix"
+        let first = Task { await viewModel.search() }
+        while finishFirst == nil { await Task.yield() }
+        viewModel.query = "inception"
+        await viewModel.search()
+        finishFirst?.resume(returning: [testMovies[0]])
+        await first.value
+        #expect(viewModel.movies == [testMovies[1]])
+        #expect(viewModel.state == .loaded)
     }
 
     @Test

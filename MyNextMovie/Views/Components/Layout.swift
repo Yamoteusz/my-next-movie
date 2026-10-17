@@ -17,3 +17,8 @@ let symbolNameMovies = "film"
 let symbolNameSearch = "magnifyingglass"
 let symbolNameError = "exclamationmark.triangle"
 let symbolNameRatingStar = "star.fill"
+
+let symbolNameSaved = "bookmark"
+let symbolNameSavedFilled = "bookmark.fill"
+let symbolNameAccount = "person.crop.circle"
+let symbolNameSearchHistory = "clock.arrow.circlepath"

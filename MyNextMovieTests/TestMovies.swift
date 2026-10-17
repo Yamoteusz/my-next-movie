@@ -1,14 +1,9 @@
-/// Sample data for the first lab and SwiftUI previews.
-/// A TMDB request replaces it in later labs.
-func loadSampleMovies() async throws -> [Movie] {
-    return sampleMovies
-}
+import Foundation
 
-func searchSampleMovies(query: String, genreId: Int) async throws -> [Movie] {
-    return filterMovies(sampleMovies, query: query, genreId: genreId)
-}
+@testable import MyNextMovie
 
-let sampleMovies: [Movie] = [
+@MainActor
+let testMovies: [Movie] = [
     Movie(
         id: 603,
         title: "The Matrix",
@@ -55,4 +50,30 @@ let sampleMovies: [Movie] = [
         voteAverage: 8.5,
         genreIds: [genreIdAnimation, genreIdFamily, genreIdFantasy]
     ),
+    Movie(
+        id: 546554, title: "Knives Out", overview: "A detective investigates a mysterious death.",
+        releaseDate: "2019-11-27", posterPath: "/pThyQovXQrw2m0s9x82twj48Jq4.jpg", voteAverage: 7.8,
+        genreIds: [genreIdComedy, genreIdCrime, genreIdMystery]),
+    Movie(
+        id: 597, title: "Titanic", overview: "Two passengers fall in love aboard the Titanic.",
+        releaseDate: "1997-12-19", posterPath: "/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg", voteAverage: 7.9,
+        genreIds: [genreIdDrama, genreIdRomance]),
 ]
+
+@MainActor
+let testMovieDetails = makeMovieDetails(runtime: 136)
+
+@MainActor
+func makeMovieDetails(runtime: Int? = nil, videos: [Video] = []) -> MovieDetails {
+    var details = emptyMovieDetails
+    details.id = 603
+    details.tagline = "Believe the unbelievable."
+    details.runtime = runtime
+    details.videos = VideoList(results: videos)
+    return details
+}
+
+@MainActor
+func filterTestMovies(query: String, genreId: Int) async throws -> [Movie] {
+    return filterMovies(testMovies, query: query, genreId: genreId)
+}

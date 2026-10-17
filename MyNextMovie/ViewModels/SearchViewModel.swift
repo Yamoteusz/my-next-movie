@@ -11,13 +11,17 @@ final class SearchViewModel {
     private(set) var errorMessage = ""
 
     private let searchMovies: MovieSearch
+    private var searchVersion = 0
 
     init(searchMovies: @escaping MovieSearch) {
         self.searchMovies = searchMovies
     }
 
     func search() async {
-        let trimmedQuery = query.trimmingCharacters(in: .whitespaces)
+        searchVersion += 1
+        let version = searchVersion
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let genreId = selectedGenreId
         if trimmedQuery.isEmpty && selectedGenreId == noGenreId {
             movies = []
             errorMessage = ""
@@ -27,9 +31,12 @@ final class SearchViewModel {
         state = .loading
         errorMessage = ""
         do {
-            movies = try await searchMovies(trimmedQuery, selectedGenreId)
+            let results = try await searchMovies(trimmedQuery, genreId)
+            guard version == searchVersion && !Task.isCancelled else { return }
+            movies = results
             state = .loaded
         } catch {
+            guard version == searchVersion && !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
             state = .failed
         }

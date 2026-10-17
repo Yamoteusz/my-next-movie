@@ -1,11 +1,14 @@
+import SwiftData
 import SwiftUI
 
 private let gridMinimumColumnWidth: CGFloat = 150
 
 struct MovieListView: View {
     @State private var viewModel: MovieListViewModel
+    private let loadDetails: MovieDetailsLoader
 
-    init(viewModel: MovieListViewModel) {
+    init(viewModel: MovieListViewModel, loadDetails: @escaping MovieDetailsLoader) {
+        self.loadDetails = loadDetails
         _viewModel = State(initialValue: viewModel)
     }
 
@@ -13,9 +16,13 @@ struct MovieListView: View {
         NavigationStack {
             content
                 .navigationTitle("My Next Movie")
-                .navigationDestination(for: Movie.self) { movie in MovieDetailView(movie: movie) }
+                .navigationDestination(for: Movie.self, destination: detailView)
         }
         .task { await viewModel.loadIfNeeded() }
+    }
+
+    private func detailView(_ movie: Movie) -> some View {
+        MovieDetailView(movie: movie, loadDetails: loadDetails)
     }
 
     @ViewBuilder
@@ -34,7 +41,7 @@ struct MovieListView: View {
 
     /// Sample movies drawn as gray shapes while the real ones load.
     private var loadingGrid: some View {
-        MovieGrid(title: "Popular", movies: sampleMovies)
+        MovieGrid(title: "Popular", movies: makePlaceholderMovies())
             .redacted(reason: .placeholder)
             .allowsHitTesting(false)
     }
@@ -49,7 +56,7 @@ struct MovieListView: View {
     }
 }
 
-private struct MovieGrid: View {
+struct MovieGrid: View {
     let title: String
     let movies: [Movie]
 
@@ -88,6 +95,22 @@ private struct MovieGridItem: View {
     }
 }
 
+private let placeholderMovieCount = 6
+private let placeholderMovieTitle = "Movie title"
+
+private func makePlaceholderMovies() -> [Movie] {
+    return (0..<placeholderMovieCount).map { id in
+        Movie(
+            id: id, title: placeholderMovieTitle, overview: "", releaseDate: "2000",
+            posterPath: nil,
+            voteAverage: 0, genreIds: [])
+    }
+}
+
 #Preview {
-    MovieListView(viewModel: MovieListViewModel(loadMovies: loadSampleMovies))
+    MovieListView(
+        viewModel: MovieListViewModel(loadMovies: fetchPopularMovies),
+        loadDetails: fetchMovieDetails
+    )
+    .modelContainer(for: storedModelTypes, inMemory: true)
 }

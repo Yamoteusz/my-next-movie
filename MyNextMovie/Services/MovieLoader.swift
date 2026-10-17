@@ -5,3 +5,6 @@ typealias MovieLoader = () async throws -> [Movie]
 
 /// Any function that searches movies by text and genre id. `noGenreId` means any genre.
 typealias MovieSearch = (_ query: String, _ genreId: Int) async throws -> [Movie]
+
+/// Loads the additional sections for one movie.
+typealias MovieDetailsLoader = (_ movieId: Int) async throws -> MovieDetails
