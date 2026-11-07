@@ -136,11 +136,63 @@ private let matrixJSON = """
     {"id":3,"name":"Lana Wachowski","job":"Director"},{"id":4,"name":"Lilly Wachowski","job":"Director"}]},
     "videos":{"results":[{"key":"fan","site":"YouTube","type":"Trailer","official":false},
     {"key":"official","site":"YouTube","type":"Trailer","official":true}]},
-    "release_dates":{"results":[{"iso_3166_1":"PL","release_dates":[{"certification":""},{"certification":"16"}]},
-    {"iso_3166_1":"US","release_dates":[{"certification":"R"}]}]},
+    "release_dates":{"results":[{"iso_3166_1":"PL","release_dates":[{"certification":"","release_date":"1999-03-31T00:00:00.000Z","type":3},{"certification":"16","release_date":"1999-03-31T00:00:00.000Z","type":3}]},
+    {"iso_3166_1":"US","release_dates":[{"certification":"R","release_date":"1999-03-31T00:00:00.000Z","type":3}]}]},
     "watch/providers":{"results":{"PL":{"link":"https://example.com/watch",
     "flatrate":[{"provider_id":119,"provider_name":"Prime Video","logo_path":"/prime.png"}],
     "rent":[{"provider_id":2,"provider_name":"Apple TV","logo_path":null}]}}},
     "recommendations":{"results":[{"id":27205,"title":"Inception","overview":"Dreams.",
     "release_date":"2010-07-15","poster_path":null,"vote_average":8.4,"genre_ids":[28]}]}}
     """
+
+@MainActor
+struct InCinemasTests {
+    private let today = Date(timeIntervalSince1970: 1_793_923_200)
+
+    @Test func recentCinemaPremiereIsInCinemas() {
+        #expect(
+            isInCinemas(cinemaRelease("2026-10-17T00:00:00.000Z"), regionCode: "PL", today: today))
+    }
+
+    @Test func limitedReleaseCountsToo() {
+        #expect(isInCinemas(cinemaRelease("2026-10-17", type: 2), regionCode: "PL", today: today))
+    }
+
+    @Test func oldPremiereIsNotInCinemas() {
+        #expect(!isInCinemas(cinemaRelease("2026-08-01"), regionCode: "PL", today: today))
+    }
+
+    @Test func futurePremiereIsNotInCinemasYet() {
+        #expect(!isInCinemas(cinemaRelease("2026-11-07"), regionCode: "PL", today: today))
+        #expect(daysSinceReleaseDay("2026-11-07", today: today) == -1)
+    }
+
+    @Test func digitalReleaseIsNotCinema() {
+        #expect(!isInCinemas(cinemaRelease("2026-10-17", type: 4), regionCode: "PL", today: today))
+    }
+
+    @Test func premiereInAnotherCountryDoesNotCount() {
+        #expect(
+            !isInCinemas(cinemaRelease("2026-10-17", country: "US"), regionCode: "PL", today: today)
+        )
+    }
+
+    @Test func unreadableDateIsNotInCinemas() {
+        #expect(!isInCinemas(cinemaRelease("not-a-date"), regionCode: "PL", today: today))
+        #expect(daysSinceReleaseDay("2026-02-30", today: today) == -1)
+        #expect(daysSinceReleaseDay("", today: today) == -1)
+    }
+
+    @Test func runIncludesReleaseDayAndDay42ButNot43() {
+        #expect(daysSinceReleaseDay("2026-11-06", today: today) == 0)
+        #expect(isInCinemas(cinemaRelease("2026-11-06"), regionCode: "PL", today: today))
+        #expect(daysSinceReleaseDay("2026-09-25", today: today) == 42)
+        #expect(isInCinemas(cinemaRelease("2026-09-25"), regionCode: "PL", today: today))
+        #expect(!isInCinemas(cinemaRelease("2026-09-24"), regionCode: "PL", today: today))
+    }
+
+    @Test func computesCalendarDaysIndependentlyOfTimeOfDay() {
+        #expect(daysSinceReleaseDay("2026-11-05T23:59:59.000Z", today: today) == 1)
+        #expect(daysSinceReleaseDay("2026-11-06T23:59:59.000Z", today: today) == 0)
+    }
+}

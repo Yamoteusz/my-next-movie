@@ -77,3 +77,15 @@ func makeMovieDetails(runtime: Int? = nil, videos: [Video] = []) -> MovieDetails
 func filterTestMovies(query: String, genreId: Int) async throws -> [Movie] {
     return filterMovies(testMovies, query: query, genreId: genreId)
 }
+
+@MainActor
+func cinemaRelease(_ date: String, type: Int = 3, country: String = "PL") -> MovieDetails {
+    var details = emptyMovieDetails
+    details.releaseDates = ReleaseDateList(results: [
+        CountryReleaseDates(
+            countryCode: country,
+            releaseDates: [ReleaseDate(certification: "16", releaseDate: date, type: type)]
+        )
+    ])
+    return details
+}

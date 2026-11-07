@@ -11,6 +11,7 @@ private let posterShadowOffset: CGFloat = 10
 struct MovieDetailView: View {
     let movie: Movie
     @State private var viewModel: MovieDetailViewModel
+    @State private var isShowingCinemas = false
 
     init(movie: Movie, loadDetails: @escaping MovieDetailsLoader) {
         self.movie = movie
@@ -23,6 +24,7 @@ struct MovieDetailView: View {
             VStack(alignment: .leading, spacing: spacingExtraLarge) {
                 MovieBackdrop(movie: movie)
                 MovieInfo(movie: movie, details: viewModel.details).padding(.horizontal)
+                cinemasButton.padding(.horizontal)
                 additionalContent.padding(.horizontal)
             }
             .padding(.bottom, spacingHuge)
@@ -31,6 +33,40 @@ struct MovieDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { SaveMovieButton(movie: movie) }
         .task { await viewModel.loadIfNeeded() }
+        .sheet(isPresented: $isShowingCinemas) { cinemasSheet }
+    }
+
+    @ViewBuilder
+    private var cinemasButton: some View {
+        if isInCinemas(viewModel.details, regionCode: watchRegionCode, today: .now) {
+            VStack(alignment: .leading, spacing: spacingSmall) {
+                nowInCinemasButton
+                cinemasDescription
+            }
+        }
+    }
+
+    private var cinemasDescription: some View {
+        Text("See the cinemas near you. Showtimes are on each cinema's website.")
+            .font(.caption).foregroundStyle(.secondary)
+    }
+
+    private var nowInCinemasButton: some View {
+        Button {
+            isShowingCinemas = true
+        } label: {
+            Label("Now in Cinemas", systemImage: symbolNameCinema)
+        }
+        .buttonStyle(.borderedProminent)
+    }
+
+    private var cinemasSheet: some View {
+        CinemaMapView(
+            viewModel: CinemaMapViewModel(
+                cinemas: wroclawCinemas, findUserLocation: findUserLocation,
+                lastKnownLocation: lastKnownUserLocation
+            ), findRoute: findMapKitRoute, placement: .sheet
+        )
     }
 
     @ViewBuilder

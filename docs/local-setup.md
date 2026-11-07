@@ -53,3 +53,19 @@ W Xcode: Product → Clean Build Folder (⇧⌘K), potem ⌘R. Do zalogowania ko
 - Account pokazuje stan synchronizacji. Zmiany offline czekają na powrót sieci i aktywację aplikacji.
 - Drugie urządzenie z tym samym kontem pobiera listę przy aktywacji.
 - Wylogowanie najpierw próbuje synchronizacji, a potem usuwa lokalne filmy i znaczniki usunięcia. Niewysłane zmiany mogą zostać utracone przy wylogowaniu offline.
+
+## Lab 6: kina i MapKit
+
+W projekcie jest zakładka Cinemas między Saved i Account. Kino z listy zaznacza pinezkę i przesuwa mapę. Pinezka zaznacza listę i przewija do właściwego wiersza. Przycisk info otwiera szczegóły kina.
+
+W symulatorze ustaw Features → Location → Custom Location: latitude `51.0983`, longitude `17.0368` (Wrocław Główny). Na pytanie aplikacji o lokalizację wybierz dostęp podczas używania aplikacji. Następnie sprawdź:
+
+- odległości na liście oraz najbliższe kina na górze,
+- trasy Walk i Drive, przycisk Directions in Maps, telefon i stronę kina,
+- Look Around, gdy Apple udostępnia zdjęcia dla danego miejsca,
+- po odmowie lokalizacji: listę alfabetyczną i informację o braku odległości,
+- Now in Cinemas na filmie z premierą kinową w kraju ustawionym na urządzeniu, od 0 do 42 dni temu; arkusz ma przycisk Done.
+
+Now in Cinemas jest wskazówką opartą na dacie premiery, a nie aktualnym repertuarem. Godziny seansów są na stronach kin. Lista kin jest lokalna; kafelki map, trasy i Look Around wymagają dostępu do usług Apple.
+
+Konfiguracja z upstream ma minimalny iOS 27. Do standardowego uruchamiania projektu potrzebny jest Xcode 27 z odpowiednim SDK i symulatorem. Testy lab6 sprawdzono również na iOS 26.4.1 w osobnej kopii z obniżonym wymaganiem, bez zmiany ustawienia 27.0 w repozytorium.

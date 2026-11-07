@@ -70,10 +70,19 @@ private struct AppTabs: View {
         TabView {
             Tab("Movies", systemImage: symbolNameMovies) { moviesTab }
             Tab("Saved", systemImage: symbolNameSaved) { SavedMoviesView(loadDetails: loadDetails) }
+            Tab("Cinemas", systemImage: symbolNameCinema) { cinemaMap }
             Tab("Account", systemImage: symbolNameAccount) { AccountView(viewModel: account) }
             Tab("Search", systemImage: symbolNameSearch, role: .search) { searchTab }
         }
         .disabled(account.isSigningOut)
+    }
+
+    private var cinemaMap: some View {
+        let viewModel = CinemaMapViewModel(
+            cinemas: wroclawCinemas, findUserLocation: findUserLocation,
+            lastKnownLocation: lastKnownUserLocation
+        )
+        return CinemaMapView(viewModel: viewModel, findRoute: findMapKitRoute, placement: .tab)
     }
 
     private var moviesTab: some View {

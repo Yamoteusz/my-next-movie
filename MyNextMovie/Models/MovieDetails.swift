@@ -61,6 +61,8 @@ nonisolated struct CountryReleaseDates: Decodable {
 
 nonisolated struct ReleaseDate: Decodable {
     let certification: String
+    let releaseDate: String
+    let type: Int
 }
 
 nonisolated struct WatchProviderList: Decodable {
@@ -153,4 +155,33 @@ func profileURL(_ castMember: CastMember) -> URL? {
 func logoURL(_ provider: WatchProvider) -> URL? {
     guard let path = provider.logoPath, !path.isEmpty else { return nil }
     return URL(string: "https://image.tmdb.org/t/p/w92" + path)
+}
+
+let releaseTypeTheatricalLimited = 2
+let releaseTypeTheatrical = 3
+let typicalCinemaRunInDays = 42
+
+func isInCinemas(_ details: MovieDetails, regionCode: String, today: Date) -> Bool {
+    let releases = details.releaseDates.results.filter { $0.countryCode == regionCode }
+        .flatMap(\.releaseDates)
+    return releases.contains { release in
+        let isTheatrical =
+            release.type == releaseTypeTheatricalLimited || release.type == releaseTypeTheatrical
+        let days = daysSinceReleaseDay(release.releaseDate, today: today)
+        return isTheatrical && days >= 0 && days <= typicalCinemaRunInDays
+    }
+}
+
+func daysSinceReleaseDay(_ releaseDate: String, today: Date) -> Int {
+    let dateText = String(releaseDate.prefix(10))
+    let style = Date.ISO8601FormatStyle().year().month().day().dateSeparator(.dash)
+    guard dateText.count == 10, let date = try? style.parse(dateText),
+        style.format(date) == dateText
+    else { return -1 }
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .gmt
+    let releaseDay = calendar.startOfDay(for: date)
+    let currentDay = calendar.startOfDay(for: today)
+    let days = calendar.dateComponents([.day], from: releaseDay, to: currentDay).day ?? -1
+    return days >= 0 ? days : -1
 }
