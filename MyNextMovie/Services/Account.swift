@@ -1,4 +1,3 @@
-/// Account and cloud boundaries, injected into view models and synchronization tests.
 typealias AccountRequest = (_ email: String, _ password: String) async throws -> String
 
 struct AccountService {

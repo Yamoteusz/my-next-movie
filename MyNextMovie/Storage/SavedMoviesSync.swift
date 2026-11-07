@@ -14,7 +14,6 @@ private func syncRemovals(_ context: ModelContext, cloud: SavedMoviesCloud) asyn
     let ids = try context.fetch(FetchDescriptor<RemovedSavedMovie>()).map(\.movieId)
     for movieId in ids {
         try await cloud.removeMovie(movieId)
-        // Re-read after suspension: the user may have saved this movie again.
         removeDeletionMark(context, movieId: movieId)
         for saved in fetchSavedMovies(context, movieId: movieId) { saved.isInCloud = false }
         try context.save()
@@ -37,7 +36,6 @@ private func syncFromCloud(_ context: ModelContext, cloud: SavedMoviesCloud) asy
         }
         if needsNewCloudCopy(context, movie) {
             try await cloud.removeMovie(movie.id)
-            // A re-save is an insert with a new date, not an UPDATE (RLS allows no UPDATE).
             if !isMovieSaved(context, movieId: movie.id) {
                 removeDeletionMark(context, movieId: movie.id)
             }
@@ -76,7 +74,6 @@ private func syncUploads(_ context: ModelContext, cloud: SavedMoviesCloud) async
     let descriptor = FetchDescriptor<SavedMovie>(predicate: #Predicate { !$0.isInCloud })
     let movies = try context.fetch(descriptor).map(cloudMovieFromSaved)
     guard !movies.isEmpty else { return }
-    // Value snapshots only: SwiftData objects never cross an await.
     let ids = movies.map(\.id)
     try await cloud.uploadMovies(movies)
     for movieId in ids {
