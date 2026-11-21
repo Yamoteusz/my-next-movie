@@ -31,3 +31,5 @@ let symbolNameWebsite = "safari"
 let symbolNameWalking = "figure.walk"
 let symbolNameDriving = "car.fill"
 let symbolNameDetails = "info.circle"
+
+let symbolNameWish = "sparkles"

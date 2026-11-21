@@ -20,6 +20,10 @@ func supabaseAnonKey() -> String {
     return infoPlistValue(forKey: infoPlistKeySupabaseAnonKey)
 }
 
+func localModelURL() -> String {
+    return infoPlistValue(forKey: "LocalModelURL")
+}
+
 private func infoPlistValue(forKey infoPlistKey: String) -> String {
     let infoPlistValue = Bundle.main.object(forInfoDictionaryKey: infoPlistKey) as? String
     return infoPlistValue ?? ""

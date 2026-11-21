@@ -91,7 +91,13 @@ private struct AppTabs: View {
     }
 
     private var searchTab: some View {
-        SearchView(
-            viewModel: SearchViewModel(searchMovies: searchTMDBMovies), loadDetails: loadDetails)
+        let wishViewModel = WishSearchViewModel(
+            parseWish: chosenWishParser(), searchByFilters: searchTMDBMoviesByFilters,
+            searchByText: searchTMDBMovies
+        )
+        return SearchView(
+            viewModel: SearchViewModel(searchMovies: searchTMDBMovies),
+            wishViewModel: wishViewModel, loadDetails: loadDetails
+        )
     }
 }

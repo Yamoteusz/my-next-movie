@@ -7,3 +7,6 @@ typealias MovieLoader = () async throws -> [Movie]
 typealias MovieSearch = (_ query: String, _ genreId: Int) async throws -> [Movie]
 
 typealias MovieDetailsLoader = (_ movieId: Int) async throws -> MovieDetails
+
+typealias MovieWishParser = @MainActor (_ wish: String) async throws -> MovieFilters
+typealias FilteredMovieSearch = @MainActor (_ filters: MovieFilters) async throws -> [Movie]

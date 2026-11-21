@@ -14,6 +14,34 @@ struct SupabaseError: LocalizedError {
     var errorDescription: String? { return message }
 }
 
+let supabaseFunctionMovieFilters = "movie-filters"
+
+nonisolated struct MovieWishRequest: Encodable {
+    let wish: String
+}
+
+nonisolated private struct FunctionErrorAnswer: Decodable {
+    let message: String
+}
+
+func functionErrorMessage(statusCode: Int, data: Data) -> String {
+    if let answer = try? JSONDecoder().decode(FunctionErrorAnswer.self, from: data) {
+        let message = answer.message.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !message.isEmpty { return message }
+    }
+    return "AI search failed (HTTP \(statusCode))."
+}
+
+func parseWishWithAI(_ wish: String) async throws -> MovieFilters {
+    let client = try requireSupabaseClient()
+    let options = FunctionInvokeOptions(body: MovieWishRequest(wish: limitedMovieWish(wish)))
+    do {
+        return try await client.functions.invoke(supabaseFunctionMovieFilters, options: options)
+    } catch FunctionsError.httpError(let status, let data) {
+        throw SupabaseError(message: functionErrorMessage(statusCode: status, data: data))
+    }
+}
+
 private var supabaseClient: SupabaseClient?
 
 private func requireSupabaseClient() throws -> SupabaseClient {
